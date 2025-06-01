@@ -18,11 +18,12 @@
   </div>
 
   <div id="pantalla-png" style="display:none;">
-    <button onclick="volverInicio('png')">⬅ Volver al menú principal</button>
-    <h2>🗜️ Compresor de imágenes PNG</h2>
+    <h1>🗜️ Compresor de imágenes PNG</h1>
+    <h2>Cargar o arrastrar tus imágenes</h2>
     <form id="form-png" enctype="multipart/form-data">
       <input type="file" name="images" accept=".png" multiple required>
-      <button type="submit">Cargar o arrastrar tus imágenes PNG</button>
+      <button type="submit">Comprimir Imágenes</button>
+      <button onclick="volverInicio('png')">⬅ Volver al menú principal</button>
     </form>
     <div id="carrusel-png" class="splide" style="display:none;">
       <div class="splide__track">
@@ -37,11 +38,12 @@
   </div>
 
   <div id="pantalla-webp" style="display:none;">
-    <button onclick="volverInicio('webp')">⬅ Volver al menú principal</button>
-    <h2>🌀 Convertidor de imágenes a WebP</h2>
+    <h1>🌀 Convertidor de imágenes a WebP</h1>
+    <h2>Cargar o arrastrar tus imágenes</h2>
     <form id="form-webp" enctype="multipart/form-data">
       <input type="file" name="images" accept="image/*" multiple required>
-      <button type="submit">Cargar o arrastrar tus imágenes</button>
+      <button type="submit">Convertir Imágenes</button>
+      <button onclick="volverInicio('webp')">⬅ Volver al menú principal</button>
     </form>
     <div id="carrusel-webp" class="splide" style="display:none;">
       <div class="splide__track">
