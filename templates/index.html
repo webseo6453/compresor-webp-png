@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Compresor de Imágenes PNG / Convertidor a WebP</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.3/dist/css/splide.min.css">
+</head>
+<body>
+  <button id="modo-oscuro-toggle" onclick="toggleModoOscuro()">🌓 Modo oscuro</button>
+
+  <div id="pantalla-inicial">
+    <h1>¡Bienvenido! ¿Qué deseas hacer?</h1>
+    <div id="selector">
+      <button onclick="mostrarVista('png')">🗜️ Comprimir imágenes PNG</button>
+      <button onclick="mostrarVista('webp')">🌀 Convertir imágenes a WebP</button>
+    </div>
+  </div>
+
+  <div id="pantalla-png" style="display:none;">
+    <button onclick="volverInicio('png')">⬅ Volver al menú principal</button>
+    <h2>🗜️ Compresor de imágenes PNG</h2>
+    <form id="form-png" enctype="multipart/form-data">
+      <input type="file" name="images" accept=".png" multiple required>
+      <button type="submit">Cargar o arrastrar tus imágenes PNG</button>
+    </form>
+    <div id="carrusel-png" class="splide" style="display:none;">
+      <div class="splide__track">
+        <ul class="splide__list" id="lista-png"></ul>
+      </div>
+    </div>
+    <div id="acciones-png" style="display:none;">
+      <button id="descargar-png">📦 Descargar PNGs comprimidos</button>
+      <button onclick="volverInicio('png')">🔙 Volver</button>
+      <button onclick="cargarMas('png')">➕ Cargar más imágenes</button>
+    </div>
+  </div>
+
+  <div id="pantalla-webp" style="display:none;">
+    <button onclick="volverInicio('webp')">⬅ Volver al menú principal</button>
+    <h2>🌀 Convertidor de imágenes a WebP</h2>
+    <form id="form-webp" enctype="multipart/form-data">
+      <input type="file" name="images" accept="image/*" multiple required>
+      <button type="submit">Cargar o arrastrar tus imágenes</button>
+    </form>
+    <div id="carrusel-webp" class="splide" style="display:none;">
+      <div class="splide__track">
+        <ul class="splide__list" id="lista-webp"></ul>
+      </div>
+    </div>
+    <div id="acciones-webp" style="display:none;">
+      <button id="descargar-webp">📦 Descargar imágenes WebP</button>
+      <button onclick="volverInicio('webp')">🔙 Volver</button>
+      <button onclick="cargarMas('webp')">➕ Cargar más imágenes</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.3/dist/js/splide.min.js"></script>
+
+  <script>
+    function mostrarAlerta(mensaje) {
+      const alerta = document.createElement('div');
+      alerta.className = 'alerta-estilizada';
+      alerta.innerText = mensaje;
+      document.body.appendChild(alerta);
+      setTimeout(() => alerta.remove(), 4000);
+    }
+
+    function toggleModoOscuro() {
+      const body = document.body;
+      body.classList.toggle('dark');
+      localStorage.setItem('modoOscuro', body.classList.contains('dark'));
+    }
+
+    window.onload = () => {
+      if (localStorage.getItem('modoOscuro') === 'true') {
+        document.body.classList.add('dark');
+      }
+    };
+
+    let loteActualPNG = null;
+    let loteActualWebP = null;
+
+    function mostrarVista(tipo) {
+      document.getElementById("pantalla-inicial").style.display = 'none';
+      document.getElementById("pantalla-png").style.display = tipo === 'png' ? 'block' : 'none';
+      document.getElementById("pantalla-webp").style.display = tipo === 'webp' ? 'block' : 'none';
+    }
+
+    function volverInicio(tipo) {
+      document.getElementById("pantalla-inicial").style.display = 'block';
+      document.getElementById("pantalla-png").style.display = 'none';
+      document.getElementById("pantalla-webp").style.display = 'none';
+      cargarMas(tipo);
+    }
+
+    function cargarMas(tipo) {
+      if (tipo === 'png') {
+        document.getElementById("lista-png").innerHTML = '';
+        document.getElementById("carrusel-png").style.display = 'none';
+        document.getElementById("acciones-png").style.display = 'none';
+        document.getElementById("form-png").reset();
+        loteActualPNG = null;
+      } else {
+        document.getElementById("lista-webp").innerHTML = '';
+        document.getElementById("carrusel-webp").style.display = 'none';
+        document.getElementById("acciones-webp").style.display = 'none';
+        document.getElementById("form-webp").reset();
+        loteActualWebP = null;
+      }
+    }
+
+    document.getElementById("form-png").onsubmit = async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const resp = await fetch('/upload_png', { method: 'POST', body: formData });
+      const data = await resp.json();
+      loteActualPNG = data.lote;
+      mostrarAlerta("¡PNG comprimido con éxito! Lote: " + data.lote);
+
+      const lista = document.getElementById("lista-png");
+      lista.innerHTML = '';
+      data.imagenes.forEach(img => {
+        const li = document.createElement("li");
+        li.className = "splide__slide";
+        li.innerHTML = `<img src="/static/converted/lote_${data.lote}/${img.comprimido}" style="width:120px;">`;
+        lista.appendChild(li);
+      });
+      document.getElementById("carrusel-png").style.display = 'block';
+      document.getElementById("acciones-png").style.display = 'block';
+      new Splide('#carrusel-png', { perPage: 5, pagination: false }).mount();
+    };
+
+    document.getElementById("form-webp").onsubmit = async function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const resp = await fetch('/upload_webp', { method: 'POST', body: formData });
+      const data = await resp.json();
+      loteActualWebP = data.lote;
+      mostrarAlerta("¡Convertido a WebP! Lote: " + data.lote);
+
+      const lista = document.getElementById("lista-webp");
+      lista.innerHTML = '';
+      data.imagenes.forEach(img => {
+        const li = document.createElement("li");
+        li.className = "splide__slide";
+        li.innerHTML = `<img src="/static/converted/webp_lote_${data.lote}/${img.webp}" style="width:120px;">`;
+        lista.appendChild(li);
+      });
+      document.getElementById("carrusel-webp").style.display = 'block';
+      document.getElementById("acciones-webp").style.display = 'block';
+      new Splide('#carrusel-webp', { perPage: 5, pagination: false }).mount();
+    };
+
+    document.getElementById("descargar-png").onclick = function() {
+      if (loteActualPNG) {
+        window.location.href = `/descargar_zip?lote=lote_${loteActualPNG}`;
+      }
+    };
+
+    document.getElementById("descargar-webp").onclick = function() {
+      if (loteActualWebP) {
+        window.location.href = `/descargar_zip?lote=webp_lote_${loteActualWebP}`;
+      }
+    };
+  </script>
+</body>
+</html>
